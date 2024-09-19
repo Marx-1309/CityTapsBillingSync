@@ -1,0 +1,366 @@
+﻿@model CityTapsBillingSync.Models.InstanceMonthVm
+
+
+<p>
+    <button id="btnProcess" type="button" class="btn btn-primary">Process Earnings</button>
+</p>
+
+
+<div class="card bg-light mb-3" style="max-width: 100rem;">
+    <div class="card-header">Earnings & Deductions</div>
+    <div class="card-body">
+@*         <h4 class="card-title">Earnings & Deductions by month</h4> *@
+        <table id="tblMonthInstances" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        <label for="inputField3" class="form-label">Month Name</label>
+                    </th>
+                    <th>
+                        <label for="inputField3" class="form-label">Year</label>
+                    </th>
+                    <th>
+                        <label for="inputField3" class="form-label">Site</label>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.uploadInstances)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Month.MonthName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Year)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Site)
+                        </td>
+                        <td>
+
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"></a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="GetReadingsByUploadInstanceId" asp-route-id="@item.UploadInstanceID"><img src="~/bsicons/list.svg" /> Manage Readings</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item btnDeleteInstance" href="#" data-insindx="@item.UploadInstanceID">
+                                    <img src="~/bsicons/trash.svg" /> Delete
+                                </a>
+                            </div>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* Modal Forms  *@
+
+<div id="btnAddProcessEarning" class="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Process CityTaps Excel Sheet </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+                    <!-- First Section with 3 Input Fields -->
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <div style="padding-top:10px" class="row">
+                                <div class="form-floating">
+
+                            <select id="monthDropdown" name="MonthID" class="form-control">
+                                    <option value="" style="position:center">-- Select Month --</option>
+                                        @foreach (var month in Model.months)
+                                        {
+                                            <option value="@month.MonthID">@month.MonthName</option>
+                                        }
+                            </select>
+                                    <label for="monthDropdown">Month</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div style="padding-top:10px" class="row">
+                                <div class="form-floating">
+                            <input type="number" class="form-control" id="inputYear">
+                                    <label for="inputField2" class="form-label">Year</label>
+                        </div>
+                            </div>
+                        </div>
+                        @* The date comes here... *@
+                        <div class="mb-3">
+                        <div style="padding-top:10px" class="row">
+                            <div class="form-floating">
+                                <input type="date" id="edDatepicker" name="selectedDate" class="form-control">
+                                    <label for="edDatepicker">Date</label>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Section with 2 File Input Controls -->
+                    <div class="accordion" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                   <img src="~/bsicons/file-earmark-excel.svg" /> Excel Sheet
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample" style="padding:10px">
+                                <div class="mb-3">
+                                    @*                                     <label for="fileInput1" class="form-label">Earnings</label> *@
+                                    <span class="badge bg-success" style="display: inline-block; width: 445px; border-top-left-radius: 10px; border-bottom-left-radius: 0;border-top-right-radius: 10px; border-bottom-right-radius: 0;">Upload CityTaps excel sheet here.</span>
+                                    <input type="file" class="form-control" id="FileUpload1" name="earningsDocument" style="margin-bottom: 10px;">
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer d-flex">
+                <div id="loadingGif" style="display: none;">
+                    <img src="~/loading.gif" style="width: 40px; height: 40px;" />
+                </div>
+
+                <div class="ms-auto">
+                    <button type="submit" asp-controller="Pay_UploadInstance" asp-action="Create" id="saveChangesBtn" class="btn btn-primary">
+                        <img src="~/bsicons/save.svg" /> Save changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <img src="~/bsicons/arrow-down-left.svg" /> Close
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+             
+            setTimeout(function () {
+                $('#tblMonthInstances').DataTable();
+            },1500);
+
+
+            $('#btnProcess').click(function () {
+                $('#btnAddProcessEarning').modal('show');
+            });
+
+            function ShowGif() {
+                // Show loading GIF when the page starts loading
+                        document.getElementById('loadingGif').style.display = 'block';
+            };
+            
+            function HideGif() {
+                // Hide loading GIF when the page finishes loading
+                window.onload = function () {
+                    document.getElementById('loadingGif').style.display = 'none';
+                };
+            };
+            
+
+            // $('#FileUpload2').change(function () {
+            //     ValidateAddForm();
+            // })
+
+            $('#monthDropdown').change(function () {
+                ValidateAddForm();
+            })
+
+            $('#inputYear').change(function () {
+                ValidateAddForm();
+            })
+
+            $('#edDatepicker').change(function () {
+                ValidateAddForm();
+            })
+
+            function ClearAddForm() {
+                $('#FileUpload1').val() == "";
+                // $('#FileUpload2').val() == "";
+                $('#monthDropdown').val() == "";
+                $('#edDatepicker').val() == "";
+                $('#inputYear').val() == "";
+            }
+
+            function HidelModal() {
+                ClearAddForm();
+                $('#btnAddProcessEarning').modal('hide');
+
+            };
+
+            $(document).ready(function () {
+                $('.btnDeleteInstance').click(function (event) {
+                    event.preventDefault(); // Prevent default action of anchor tag
+
+                    var Id = $(this).attr('data-insindx');
+                    Swal.fire({
+                        icon: "warning",
+                        title: "You are about to delete this record and its related data!",
+                        showDenyButton: true,
+                        showConfirmButton: false,
+                        showCancelButton: true,
+                        denyButtonText: `Yes Delete`
+                    }).then((result) => {
+                        /* Read more about isConfirmed, isDenied below */
+                        if (result.isDenied) {
+                            $.ajax({
+                                url: '/UploadReadings/DeleteInstance?id=' + Id,
+                                type: 'GET',
+                                success: function (response) {
+                                    if (response == false) {
+                                        alert('Unable to savexxx the data.' + Id);
+                                    } else {
+                                        $('#AddProcessEarning').modal('hide');
+                                        
+                                            Swal.fire("Record deleted ", "", "success");
+                                        
+
+                                        setTimeout(function () {
+                                            //document.location.href = 'http://localhost:82/Pay_UploadInstance';
+                                            location.reload();
+                                        }, 1500);
+                                    }
+                                },
+                                error: function () {
+                                    alert('Unable to saveee the data.' + Id);
+                                }
+                            }).done(function () {
+                               
+                            });
+                        }
+                    });
+                });
+            });
+
+
+            function ValidateAddForm(){
+
+                var isValid = true;
+
+
+                if ($('#FileUpload1').val().trim() == "") {
+                    $('#FileUpload1').css('border-color', 'Red');
+                    isValid = false;
+                }
+                else {
+                    $('#FileUpload1').css('border-color', 'lightgrey');
+                }
+
+                // if ($('#FileUpload2').val().trim() == "") {
+                //     $('#FileUpload2').css('border-color', 'Red');
+                //     isValid = false;
+                // }
+                // else {
+                //     $('#FileUpload2').css('border-color', 'lightgrey');
+                // }
+
+                if ($('#monthDropdown').val().trim() == "") {
+                    $('#monthDropdown').css('border-color', 'Red');
+                    isValid = false;
+                }
+                else {
+                    $('#monthDropdown').css('border-color', 'lightgrey');
+                }
+
+                if ($('#inputYear').val().trim() == "") {
+                    $('#inputYear').css('border-color', 'Red');
+                    isValid = false;
+                }
+                else {
+                    $('#inputYear').css('border-color', 'lightgrey');
+                }
+
+                if ($('#edDatepicker').val().trim() == "") {
+                    $('#edDatepicker').css('border-color', 'Red');
+                    isValid = false;
+                }
+                else {
+                    $('#edDatepicker').css('border-color', 'lightgrey');
+                }
+                return isValid;
+            };
+
+
+
+            $('#saveChangesBtn').click(function () {
+                
+                var result = ValidateAddForm();
+                if (result == false) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Please fill all fields!",
+                    });
+                    return false;
+                }
+                ShowGif();
+                var formData = new FormData();
+                formData.append("Year", $('#inputYear').val());
+                formData.append("MonthId", $('#monthDropdown').val());
+                formData.append("DateCreated", $('#edDatepicker').val());
+
+                var files = $("#FileUpload1")[0].files;
+                for (var i = 0; i < files.length; i++) {
+                    formData.append("FileUpload1", files[i]);
+                }
+
+                // var files2 = $("#FileUpload2")[0].files;
+                // for (var j = 0; j < files2.length; j++) {
+                //     formData.append("FileUpload2", files2[j]);
+                // }
+                // Send data to the controller using AJAX
+                $.ajax({
+                        url: '/UploadReadings/Create',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,  // Prevent jQuery from automatically processing formData
+                    contentType: false,  // Prevent jQuery from setting contentType
+                    success: function (response) {
+                        if (response == null || response == undefined || response.length == 0) {
+                            alert('Unable to save the data.');
+                        } else {
+                            HideGif();
+                            HidelModal();
+                            Swal.fire(
+                                'Good job!',
+                                'Record saved successfully!',
+                                'success'
+                            );
+                            setTimeout(function () {
+                                //document.location.href = 'http://localhost:82/Pay_UploadInstance';
+                                location.reload();
+                            }, 1500);
+                        }
+                    },
+                    error: function () {
+
+                        alert('Unable to save the data.');
+                    }
+                });
+            });
+
+
+        });
+    </script>
+}

@@ -1,0 +1,28 @@
+﻿﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<CityTapsBillingSync.Models.ApplicationUser> SignInManager
+@inject UserManager<CityTapsBillingSync.Models.ApplicationUser> UserManager;
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome Back. </h1>
+    @if (!SignInManager.IsSignedIn(User))
+    {
+
+        <br />
+        <h6>
+            Please login to proceed here -  <a id="loginForm" method="post" style="text-decoration: none" class="form-inline" asp-controller="Account" asp-action="Login">login</a>
+        </h6>
+        <div style="padding:50px">
+            <img class="responsive" style="border-radius: 15px; /* Adjust as needed */
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.2);" src="~/lock-banner-logo.jpg" draggable="false" />
+        </div>
+
+        <br />
+    }
+
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>

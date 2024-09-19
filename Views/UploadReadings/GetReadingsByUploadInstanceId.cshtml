@@ -1,0 +1,286 @@
+﻿@model IEnumerable<CityTapsBillingSync.Models.CTaps_Reading>
+@{
+    var instData = @TempData["instanceDetails"];
+}
+@{
+
+    var status = Context.Request.Query["status"];
+    var averange = "";
+    var negative = "";
+    var zero = "";
+    var all = "";
+
+    switch (status)
+    {
+        case "averange":
+            averange = "active text-white bg-secondary";
+            break;
+        case "negative":
+            negative = "active text-white bg-secondary";
+            break;
+        case "zero":
+            zero = "active text-white bg-secondary";
+            break;
+        default:
+            all = "active text-white bg-secondary";
+            break;
+    }
+}
+
+<p>
+    <button id="btnImportCityTapsReadings" type="button" class="btn btn-primary">Import To Billing</button>
+</p>
+
+<div class="card bg-light mb-3" style="max-width: 100rem;">
+    <div class="card-header">
+        <ul class="list-group list-group-horizontal-sm pt-2">
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageAverageList" asp-route-status="approved">
+            <li class="list-group-item @averange">Average</li>
+            </a>
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageNegativeList" asp-route-status="readyforpickup">
+            <li class="list-group-item @negative">Negative</li>
+            </a>
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageZeroList" asp-route-status="cancelled">
+            <li class="list-group-item @zero">Zero</li>
+            </a>
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="CityTapReadingsIndex" asp-route-status="all">
+            <li class="list-group-item @all">All</li>
+            </a>
+        </ul>
+    </div>
+    <div class="card-body">
+        @* <h4 class="card-title">Earnings & Deductions by month</h4> *@
+        <div class="accordion" id="accordionExample" style="padding-bottom:10px;">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <a><img src="~/bsicons/info-circle-fill.svg" /> Instance Details</a>
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        @* <button id="btnProcess" type="button" class="btn btn-primary" style="flex-shrink: 0;"><img src="~/bsicons/plus-lg.svg" /> Add new</button> *@
+                        @Html.Raw(instData);
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <table class="table compact hover mdl-data-table" style="width:100%" id="listCitytaps">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.MeterSerial)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.CustomerNo)
+                    </th>
+@*                     <th>
+                        @Html.DisplayNameFor(model => model.IsMeterActive)
+                    </th> *@
+                    <th>
+                        @Html.DisplayNameFor(model => model.Timestamp)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Reading)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.MeterSerial)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CustomerNo)
+                        </td>
+                        @* <td>
+                            <input class="form-check-input" type="checkbox" disabled
+                                   id="flexCheckDefault"
+                                   checked="@((bool)item.IsMeterActive ? "checked" : "")"
+                                   value="@item.IsMeterActive" />
+                        </td> *@
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Timestamp)
+                        </td>
+                        <td>
+                            <b>
+                                @Html.DisplayFor(modelItem => item.Reading)
+                            </b>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="modal" id="modalExportInstance">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                @* <h5 class="modal-title">Modal title</h5> *@
+                <div class="alert alert-dismissible alert-danger">
+                    <label>
+                        You are about to import <strong>@ViewBag.readingsCount</strong> readings for: <strong>@ViewBag.latestMonth @ViewBag.latestYear</strong>
+                        <br /><strong>Note</strong> : If the billing period is not accurate , please contact your IT administrators.
+                    </label>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="accordion" id="accordionExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                Change the billing period here...
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample" style="">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <!-- First Section with 3 Input Fields -->
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <div style="padding-top:10px" class="row">
+                                                <div class="form-floating">
+
+                                                    <select id="monthDropdown" name="MonthId" class="form-control">
+                                                        <option value="" style="position:center">-- Select Month --</option>
+
+                                                        @foreach (var month in ViewBag.currentMonth)
+                                                        {
+                                                            <option value="@month.MonthID">@month.MonthName</option>
+                                                        }
+                                                    </select>
+                                                    <label for="monthDropdown">Month</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <div style="padding-top:10px" class="row">
+                                                <div class="form-floating">
+                                                    <input type="number" class="form-control" id="inputYear">
+                                                    <label for="inputField2" class="form-label">Year</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @* The date comes here... *@
+                                        <div class="mb-3">
+                                            <div style="padding-top:10px" class="row">
+                                                <div class="form-floating">
+                                                    <input type="date" id="edDatepicker" name="selectedDate" class="form-control">
+                                                    <label for="edDatepicker">Date</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button id="btnConfirmImportCityTapsReadings" type="button" class="btn btn-primary">Import to Billing</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            setTimeout(function () {
+                $('#listCitytaps').DataTable();
+            }, 1500);
+            $('#btnImportCityTapsReadings').click(function () {
+                $('#modalExportInstance').modal('show');
+            });
+            $('#btnConfirmImportCityTapsReadings').click(function () {
+
+                var formData = new FormData();
+                formData.append("Year", $('#inputYear').val());
+                formData.append("MonthId", $('#monthDropdown').val());
+                formData.append("DateCreated", $('#edDatepicker').val());
+
+                $.ajax({
+                    url: '/CTReadings/ImportCityTapsReadings',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,  // Prevent jQuery from automatically processing formData
+                    contentType: false,  // Prevent jQuery from setting contentType
+                    success: function (response) {
+                        if (response == null || response == undefined || response.length == 0) {
+
+
+
+                        } else {
+                            Swal.fire(
+                                'Good job!',
+                                'Record added successfully',
+                                'success'
+                            );
+                            setTimeout(function () {
+                                //document.location.href = 'http://localhost:82/Pay_UploadInstance';
+                                location.reload();
+                            }, 1500);
+                        }
+                    },
+                    error: function () {
+
+                        Swal.fire(
+                            'Good job!',
+                            'Record added successfully',
+                            'success'
+                        );
+                    }
+                });
+            });
+
+            function loadDataTable(status) {
+                dataTable = $('#listCitytaps').DataTable({
+                    order: [[0, 'desc']],
+                    "ajax": { url: "/order/getall?status=" + status },
+                    "columns": [
+                        { data: 'meterPointId', "width": "5%" },
+                        { data: 'meterSerial', "width": "25%" },
+                        { data: 'customerNo', "width": "20%" },
+                        { data: 'isMeterActive', "width": "10%" },
+                        { data: 'reading', "width": "10%" },
+                        {
+                            data: 'orderHeaderId',
+                            "render": function (data) {
+                                return `<div class="w-75 btn-group" role="group">
+                                    <a href="/order/orderDetail?orderId=${data}" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i></a>
+                                    </div>`
+                            },
+                            "width": "10%"
+                        }
+                    ],
+                })
+            }
+
+            const table = new DataTable('#listCitytaps');
+
+            table.on('click', 'tbody tr', function (e) {
+                e.currentTarget.classList.toggle('selected');
+            });
+
+            document.querySelector('#button').addEventListener('click', function () {
+                alert(table.rows('.selected').data().length + ' row(s) selected');
+            });
+
+
+        });
+    </script>
+
+}

@@ -1,0 +1,32 @@
+﻿﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<CityTapsBillingSync.Models.ApplicationUser> SignInManager
+@inject UserManager<CityTapsBillingSync.Models.ApplicationUser> UserManager;
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="#">Hello @UserManager.GetUserName(User)</a>
+        </li>
+        <li class="nav-item">
+            <form id="logoutForm" method="post" class="form-inline" asp-controller="Account" asp-action="LogOff">
+                <button type="submit" class="btn nav-link">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+@*         <li class="nav-item">
+            <a id="RegisterForm" style="text-decoration: none" method="post" class="form-inline" asp-controller="Account" asp-action="Register">
+                <button type="submit" class="btn nav-link" >Register</button>
+            </a>
+        </li> *@
+        <li class="nav-item">
+            <a id="loginForm" method="post" style="text-decoration: none" class="form-inline" asp-controller="Account" asp-action="Login">
+                <button type="submit" class="btn nav-link" >Login</button>
+            </a>
+        </li>
+    }
+
+</ul>
