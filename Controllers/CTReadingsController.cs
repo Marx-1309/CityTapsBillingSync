@@ -13,6 +13,8 @@ using CityTapsBillingSync.Services.IService;
 using IdentityModel;
 using CityTapsBillingSync.Utility;
 using Microsoft.AspNetCore.Authorization;
+using System.Security;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace CityTapsBillingSync.Controllers
 {
@@ -75,7 +77,9 @@ namespace CityTapsBillingSync.Controllers
 
         public async Task<JsonResult> ImportCityTapsReadingsAsync(BS_WaterReadingExport waterReadingExport)
         {
+            string[] logedInUser = User.Identity.Name.Trim().ToString().Split('@');
 
+            
             BS_WaterReadingExport ReadingExport = new();
 
             try
@@ -129,7 +133,15 @@ namespace CityTapsBillingSync.Controllers
                         {
                             billingCust.CURRENT_READING = item.Reading;
                             billingCust.IsCityTab = true;
-                            billingCust.METER_READER = "UserX";
+
+                            if (logedInUser.Length > 0)
+                            {
+                                billingCust.METER_READER = logedInUser[0];
+                            }
+                            else
+                            {
+                                billingCust.METER_READER = "Unknown";
+                            }
                             billingCust.ReadingDate = DateTime.UtcNow.ToString();
 
                             _context.BS_WaterReadingExportData.Update(billingCust);
