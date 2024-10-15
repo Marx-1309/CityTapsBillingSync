@@ -20,3 +20,12 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.transparent-bg {
+    
+    background-image: url('../water_wallpaper.jpg'); /* Path to your transparent background image */
+    background-size: cover; /* Ensure the image covers the entire area */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent tiling */
+    opacity: 0.8; /* Control the transparency */
+}
