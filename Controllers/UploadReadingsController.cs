@@ -6,9 +6,11 @@ using CityTapsBillingSync.Services.IService;
 using System.Text;
 using ExcelDataReader;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CityTapsBillingSync.Controllers
 {
+    [Authorize]
     public class UploadReadingsController : Controller
     {
         private readonly CityTapsBillingSyncContext _context;
