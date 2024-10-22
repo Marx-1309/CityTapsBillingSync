@@ -235,11 +235,11 @@
                     contentType: false,  // Prevent jQuery from setting contentType
                     success: function (response) {
                         if (response == null || response == undefined || response.length == 0) {
-
-
-
+                            HideGif();
+                            $('#modalExportInstance').modal('hide');
                         } else {
                             HideGif();
+                            $('#modalExportInstance').modal('hide');
                             Swal.fire(
                                 'Good job!',
                                 'Records updated successfully',
@@ -253,6 +253,7 @@
                     },
                     error: function () {
                         HideGif();
+                        $('#modalExportInstance').modal('hide');
                         Swal.fire(
                             'Good job!',
                             'Record added successfully',
