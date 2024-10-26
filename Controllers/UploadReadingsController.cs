@@ -279,11 +279,12 @@ namespace CityTapsBillingSync.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetReadingsByUploadInstanceId(int Id)
+        public async Task<IActionResult> GetReadingsByUploadInstanceId(int InstanceId,string? status)
         {
-            var instance = await _context.CTaps_UploadInstance.Where(r => r.UploadInstanceID == Id).FirstOrDefaultAsync();
+            var instance = await _context.CTaps_UploadInstance.Where(r => r.UploadInstanceID == InstanceId).FirstOrDefaultAsync();
             if (instance != null)
             {
+                ViewData["InstanceId"] = instance.UploadInstanceID;
                 var insData = new
                 {
                     MonthName = await _context.BS_Month.Where(r => r.MonthID == instance.MonthId).Select(r => r.MonthName.ToString().Trim()).FirstOrDefaultAsync(),
@@ -307,8 +308,32 @@ namespace CityTapsBillingSync.Controllers
                 ViewBag.currentMonth = await _context.BS_Month.ToListAsync();
 
             }
-            var items = await _context.CTaps_Reading.Where(m => m.UploadInstanceId == Id).ToListAsync();
+            if(status == "all")
+            {
+
+                var previousInstId = _context.CTaps_Reading
+                    .Where(x => x.UploadInstanceId < InstanceId)
+                    .OrderByDescending(x => x.UploadInstanceId)
+                    .Select(x => x.UploadInstanceId)
+                    .FirstOrDefault();
+                var customers = await _context.CTaps_Reading.Select(x => x.CustomerNo).Distinct().ToListAsync();
+
+                var itemsAll = await _context.CTaps_Reading
+                                        .Where(m => m.UploadInstanceId == previousInstId && customers
+                                        .Contains(m.CustomerNo))
+                                        .ToListAsync();
+                var allReadings = _context.BS_WaterReadingExportData.ToList();
+
+                foreach ( var item in itemsAll)
+                {
+                    
+                }
+
+                //return View(itemsAll);
+            }
+            var items = await _context.CTaps_Reading.Where(m => m.UploadInstanceId == InstanceId).ToListAsync();
             return View(items);
+
         }
     }
 }

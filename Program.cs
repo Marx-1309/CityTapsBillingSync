@@ -25,9 +25,8 @@ namespace CityTapsBillingSync
             builder.Services.AddScoped<ICityTapsService, CityTapService>();
 
 
-            builder.Services.AddDbContext<CityTapsBillingSyncContext>(options =>
-       options.UseSqlServer(builder.Configuration.GetConnectionString("CityTapsBillingSyncContext") ?? throw new InvalidOperationException("Connection string 'CityTapsBillingSyncContext' not found.")));
-            builder.Services.AddDbContext<CityTapsBillingSyncContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            
+            builder.Services.AddDbContext<CityTapsBillingSyncContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("CityTapsBillingSyncContext")));
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<CityTapsBillingSyncContext>();
             builder.Services.Configure<IdentityOptions>(opt =>
             {
@@ -62,7 +61,7 @@ namespace CityTapsBillingSync
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            app.Run();
+             app.Run();
         }
     }
 }

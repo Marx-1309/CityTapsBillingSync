@@ -26,22 +26,22 @@
 }
 
 <p>
-    <button id="btnImportCityTapsReadings" type="button" class="btn btn-primary">Import To Billing</button>
+    <button id="btnImportCityTapsReadings" type="button" class="btn btn-primary">Import To Billinxxxg</button>
 </p>
 
 <div class="card bg-light mb-3" style="max-width: 100rem;">
     <div class="card-header">
         <ul class="list-group list-group-horizontal-sm pt-2">
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageAverageList" asp-route-status="approved">
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="averange">
             <li class="list-group-item @averange">Average</li>
             </a>
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageNegativeList" asp-route-status="readyforpickup">
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="negative">
             <li class="list-group-item @negative">Negative</li>
             </a>
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageZeroList" asp-route-status="cancelled">
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="zero">
             <li class="list-group-item @zero">Zero</li>
             </a>
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="CityTapReadingsIndex" asp-route-status="all">
+            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="all">
             <li class="list-group-item @all">All</li>
             </a>
         </ul>

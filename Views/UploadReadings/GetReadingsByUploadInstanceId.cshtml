@@ -34,16 +34,16 @@
 <div class="card bg-light mb-3" style="max-width: 100rem;">
     <div class="card-header">
         <ul class="list-group list-group-horizontal-sm pt-2">
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageAverageList" asp-route-status="approved">
+            <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="averange" asp-route-InstanceId=@ViewData["InstanceId"]>
             <li class="list-group-item @averange">Average</li>
             </a>
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageNegativeList" asp-route-status="readyforpickup">
+            <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="negative" asp-route-InstanceId=@ViewData["InstanceId"]>
             <li class="list-group-item @negative">Negative</li>
             </a>
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="ManageZeroList" asp-route-status="cancelled">
+            <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="zero" asp-route-InstanceId=@ViewData["InstanceId"]>
             <li class="list-group-item @zero">Zero</li>
             </a>
-            <a style="text-decoration:none" asp-controller="CTReadings" asp-action="CityTapReadingsIndex" asp-route-status="all">
+            <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="all" asp-route-InstanceId=@ViewData["InstanceId"]>
             <li class="list-group-item @all">All</li>
             </a>
         </ul>
@@ -263,28 +263,28 @@
                 });
             });
 
-            function loadDataTable(status) {
-                dataTable = $('#listCitytaps').DataTable({
-                    order: [[0, 'desc']],
-                    "ajax": { url: "/order/getall?status=" + status },
-                    "columns": [
-                        { data: 'meterPointId', "width": "5%" },
-                        { data: 'meterSerial', "width": "25%" },
-                        { data: 'customerNo', "width": "20%" },
-                        { data: 'isMeterActive', "width": "10%" },
-                        { data: 'reading', "width": "10%" },
-                        {
-                            data: 'orderHeaderId',
-                            "render": function (data) {
-                                return `<div class="w-75 btn-group" role="group">
-                                    <a href="/order/orderDetail?orderId=${data}" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i></a>
-                                    </div>`
-                            },
-                            "width": "10%"
-                        }
-                    ],
-                })
-            }
+            // function loadDataTable(status) {
+            //     dataTable = $('#listCitytaps').DataTable({
+            //         order: [[0, 'desc']],
+            //         "ajax": { url: "/order/getall?status=" + status },
+            //         "columns": [
+            //             { data: 'meterPointId', "width": "5%" },
+            //             { data: 'meterSerial', "width": "25%" },
+            //             { data: 'customerNo', "width": "20%" },
+            //             { data: 'isMeterActive', "width": "10%" },
+            //             { data: 'reading', "width": "10%" },
+            //             {
+            //                 data: 'orderHeaderId',
+            //                 "render": function (data) {
+            //                     return `<div class="w-75 btn-group" role="group">
+            //                         <a href="/order/orderDetail?orderId=${data}" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i></a>
+            //                         </div>`
+            //                 },
+            //                 "width": "10%"
+            //             }
+            //         ],
+            //     })
+            // }
 
             const table = new DataTable('#listCitytaps');
 

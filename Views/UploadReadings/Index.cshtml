@@ -42,7 +42,7 @@
 
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"></a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="GetReadingsByUploadInstanceId" asp-route-id="@item.UploadInstanceID"><img src="~/bsicons/list.svg" /> Manage Readings</a>
+                                <a class="dropdown-item" asp-action="GetReadingsByUploadInstanceId" asp-route-InstanceId="@item.UploadInstanceID"><img src="~/bsicons/list.svg" /> Manage Readings</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item btnDeleteInstance" href="#" data-insindx="@item.UploadInstanceID">
                                     <img src="~/bsicons/trash.svg" /> Delete
@@ -225,11 +225,11 @@
                         /* Read more about isConfirmed, isDenied below */
                         if (result.isDenied) {
                             $.ajax({
-                                url: '/UploadReadings/DeleteInstance?id=' + Id,
+                                url: '/UploadReadings/DeleteInstance?id=' + InstanceId,
                                 type: 'GET',
                                 success: function (response) {
                                     if (response == false) {
-                                        alert('Unable to savexxx the data.' + Id);
+                                        alert('Unable to savexxx the data.' + InstanceId);
                                     } else {
                                         $('#AddProcessEarning').modal('hide');
                                         
@@ -243,7 +243,7 @@
                                     }
                                 },
                                 error: function () {
-                                    alert('Unable to saveee the data.' + Id);
+                                    alert('Unable to saveee the data.' + InstanceId);
                                 }
                             }).done(function () {
                                
