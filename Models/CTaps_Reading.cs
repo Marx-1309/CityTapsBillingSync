@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using AutoMapper.Configuration.Annotations;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -28,7 +29,10 @@ namespace CityTapsBillingSync.Models
         public DateTime? Timestamp { get; set; }
         [DisplayName("CurrentReading")]
         public int? Reading { get; set; }
-
+        [NotMapped]
+        [Ignore]
+        [DisplayName("PreviousReading")]
+        public int? PreviousReading { get; set; }
         public int UploadInstanceId {  get; set; }
     }
 }

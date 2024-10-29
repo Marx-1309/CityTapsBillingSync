@@ -5,21 +5,24 @@
 @{
 
     var status = Context.Request.Query["status"];
-    var averange = "";
+    var average = "";
     var negative = "";
     var zero = "";
     var all = "";
 
     switch (status)
     {
-        case "averange":
-            averange = "active text-white bg-secondary";
+        case "average":
+            average = "active text-white bg-secondary";
             break;
         case "negative":
             negative = "active text-white bg-secondary";
             break;
         case "zero":
             zero = "active text-white bg-secondary";
+            break;
+        case "all":
+            all = "active text-white bg-secondary";
             break;
         default:
             all = "active text-white bg-secondary";
@@ -34,17 +37,17 @@
 <div class="card bg-light mb-3" style="max-width: 100rem;">
     <div class="card-header">
         <ul class="list-group list-group-horizontal-sm pt-2">
-            <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="averange" asp-route-InstanceId=@ViewData["InstanceId"]>
-            <li class="list-group-item @averange">Average</li>
+            <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="average" asp-route-InstanceId=@ViewData["InstanceId"]>
+            <li class="list-group-item @average">Average @ViewBag.AReadingsCount</li>
             </a>
             <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="negative" asp-route-InstanceId=@ViewData["InstanceId"]>
-            <li class="list-group-item @negative">Negative</li>
+            <li class="list-group-item @negative">Negative @ViewBag.NReadingsCount</li>
             </a>
             <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="zero" asp-route-InstanceId=@ViewData["InstanceId"]>
-            <li class="list-group-item @zero">Zero</li>
+            <li class="list-group-item @zero">Zero @ViewBag.ZReadingsCount</li>
             </a>
             <a style="text-decoration:none" asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId" asp-route-status="all" asp-route-InstanceId=@ViewData["InstanceId"]>
-            <li class="list-group-item @all">All</li>
+            <li class="list-group-item @all">All  @ViewBag.AllReadingsCount </li>
             </a>
         </ul>
     </div>
@@ -84,6 +87,9 @@
                     <th>
                         @Html.DisplayNameFor(model => model.Reading)
                     </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.PreviousReading)
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -109,7 +115,11 @@
                             <b>
                                 @Html.DisplayFor(modelItem => item.Reading)
                             </b>
-
+                        </td>
+                        <td>
+                            <b>
+                                @Html.DisplayFor(modelItem => item.PreviousReading)
+                            </b>
                         </td>
                     </tr>
                 }

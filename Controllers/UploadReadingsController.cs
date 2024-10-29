@@ -7,6 +7,9 @@ using System.Text;
 using ExcelDataReader;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Data.SqlClient;
+using System.Data;
+using NuGet.Packaging.Licenses;
 
 namespace CityTapsBillingSync.Controllers
 {
@@ -15,10 +18,16 @@ namespace CityTapsBillingSync.Controllers
     {
         private readonly CityTapsBillingSyncContext _context;
         private readonly ICityTapsService _cityTapsService;
-        public UploadReadingsController(CityTapsBillingSyncContext context, ICityTapsService cityTapsService)
+        string SqlConnectionString;
+        private IConfiguration _configuration;
+        string sqlQuery = $"SELECT DISTINCT \r\n    WRED.CUSTOMER_NUMBER,\r\n    CT.CUSTNMBR_CITYTAP as CITY_TAP_CUSTOMER_NUMBER,\r\n    [Timestamp],\r\n    WRED.CUSTOMER_NAME,\r\n    WRED.ERF_NUMBER,\r\n    WRED.METER_NUMBER,\r\n    WRED.AREA,\r\n    WRED.PREVIOUS_READING,\r\n    WRED.CURRENT_READING\r\n  \r\nFROM \r\n    BS_WaterReadingExportData WRED\r\n   JOIN CTaps_Reading CTR ON WRED.CUSTOMER_NUMBER = (SELECT  CUSTNMBR FROM BS_DebtorCityTap WHERE CUSTNMBR_CITYTAP = CTR.CustomerNo)\r\n   JOIN \r\n    BS_DebtorCityTap CT \r\n    ON WRED.CUSTOMER_NUMBER = CT.CUSTNMBR \r\nWHERE  \r\n    WRED.IsCityTab = 1 \r\n    AND WRED.WaterReadingExportID = 6\r\n    AND WRED.CURRENT_READING < WRED.PREVIOUS_READING;";
+        public UploadReadingsController(CityTapsBillingSyncContext context, ICityTapsService cityTapsService, IConfiguration configuration)
         {
             _context = context;
             _cityTapsService = cityTapsService;
+            _configuration = configuration;
+            SqlConnectionString = @"Data Source=localhost;Initial Catalog=OMMOF;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True";
+
         }
 
         [HttpGet]
@@ -281,16 +290,17 @@ namespace CityTapsBillingSync.Controllers
         [HttpGet]
         public async Task<IActionResult> GetReadingsByUploadInstanceId(int InstanceId,string? status)
         {
-            var instance = await _context.CTaps_UploadInstance.Where(r => r.UploadInstanceID == InstanceId).FirstOrDefaultAsync();
-            if (instance != null)
+            var MathOperator = "";
+            var Instance = await _context.CTaps_UploadInstance.Where(r => r.UploadInstanceID == InstanceId).FirstOrDefaultAsync();
+            if (Instance != null)
             {
-                ViewData["InstanceId"] = instance.UploadInstanceID;
+                ViewData["InstanceId"] = Instance.UploadInstanceID;
                 var insData = new
                 {
-                    MonthName = await _context.BS_Month.Where(r => r.MonthID == instance.MonthId).Select(r => r.MonthName.ToString().Trim()).FirstOrDefaultAsync(),
-                    Year = instance.Year,
-                    Site = instance.Site.Trim(),
-                    DateCreated = instance.DateCreated
+                    MonthName = await _context.BS_Month.Where(r => r.MonthID == Instance.MonthId).Select(r => r.MonthName.ToString().Trim()).FirstOrDefaultAsync(),
+                    Year = Instance.Year,
+                    Site = Instance.Site.Trim(),
+                    DateCreated = Instance.DateCreated
                 };
                 //var months = await _context.BS_Month.ToListAsync();
 
@@ -308,32 +318,109 @@ namespace CityTapsBillingSync.Controllers
                 ViewBag.currentMonth = await _context.BS_Month.ToListAsync();
 
             }
-            if(status == "all")
+
+            if(status is not null)
             {
-
-                var previousInstId = _context.CTaps_Reading
-                    .Where(x => x.UploadInstanceId < InstanceId)
-                    .OrderByDescending(x => x.UploadInstanceId)
-                    .Select(x => x.UploadInstanceId)
-                    .FirstOrDefault();
-                var customers = await _context.CTaps_Reading.Select(x => x.CustomerNo).Distinct().ToListAsync();
-
-                var itemsAll = await _context.CTaps_Reading
-                                        .Where(m => m.UploadInstanceId == previousInstId && customers
-                                        .Contains(m.CustomerNo))
-                                        .ToListAsync();
-                var allReadings = _context.BS_WaterReadingExportData.ToList();
-
-                foreach ( var item in itemsAll)
+                var readingsList = await GetReadingsByType(status,InstanceId);
+                if(status == "all")
                 {
-                    
+                    ViewBag.AllReadingsCount = readingsList.Count();
+                }
+                if (status == "negative")
+                {
+                    ViewBag.NReadingsCount = readingsList.Count();
+                }
+                if (status == "zero")
+                {
+                    ViewBag.ZReadingsCount = readingsList.Count();
+                }
+                if (status == "average")
+                {
+                    ViewBag.AReadingsCount = readingsList.Count();
                 }
 
-                //return View(itemsAll);
+                return View((IEnumerable<CTaps_Reading>)readingsList);
             }
+            
             var items = await _context.CTaps_Reading.Where(m => m.UploadInstanceId == InstanceId).ToListAsync();
             return View(items);
 
+        }
+
+        public async Task<List<CTaps_Reading>> GetReadingsByType(string ReadingType,int InstanceId)
+        {
+            string Operand = "";
+            string Option ="";
+
+            if (ReadingType == "all")
+            {
+                Operand = ">=";
+                Option = "OR  WRED.CURRENT_READING >=  WRED.PREVIOUS_READING OR WRED.CURRENT_READING =  WRED.PREVIOUS_READING ";
+
+            }
+            if (ReadingType == "negative")
+            {
+                Operand = "<";
+            }
+            if (ReadingType == "zero")
+            {
+                Operand = "=";
+            }
+            if (ReadingType == "average")
+            {
+                Operand = ">=";
+            }
+
+            #region Query
+            string query = $"SELECT DISTINCT \n" +
+                           $"    WRED.CUSTOMER_NUMBER,\n" +
+                           $"    CT.CUSTNMBR_CITYTAP as CITY_TAP_CUSTOMER_NUMBER,\n" +
+                           $"    [Timestamp],\n" +
+                           $"    WRED.CUSTOMER_NAME,\n" +
+                           $"    WRED.ERF_NUMBER,\n" +
+                           $"    WRED.METER_NUMBER,\n" +
+                           $"    WRED.AREA,\n" +
+                           $"    WRED.PREVIOUS_READING,\n" +
+                           $"    WRED.CURRENT_READING\n  \nFROM \n" +
+                           $"    BS_WaterReadingExportData WRED\n" +
+                           $"   JOIN CTaps_Reading CTR ON WRED.CUSTOMER_NUMBER = (SELECT  CUSTNMBR FROM BS_DebtorCityTap WHERE CUSTNMBR_CITYTAP = CTR.CustomerNo)\n" +
+                           $"   JOIN \n    BS_DebtorCityTap CT \n    ON WRED.CUSTOMER_NUMBER = CT.CUSTNMBR \nWHERE  \n" +
+                           $"    WRED.IsCityTab = 1 \n" +
+                           $"    AND WRED.WaterReadingExportID = {InstanceId}\n" +
+                           $"    AND WRED.CURRENT_READING {Operand} WRED.PREVIOUS_READING {Option};";
+            #endregion
+
+            List<CTaps_Reading> cTaps_ReadingList = new List<CTaps_Reading>();
+            using (SqlConnection con = new SqlConnection(SqlConnectionString))
+            {
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.CommandType = CommandType.Text;
+                con.Open();
+                SqlDataReader rdr = cmd.ExecuteReader();
+                while (rdr.Read())
+                {
+                    CTaps_Reading cTaps_Reading = new CTaps_Reading();
+
+                    cTaps_Reading.CustomerNo = rdr["CITY_TAP_CUSTOMER_NUMBER"].ToString().Trim();
+                    cTaps_Reading.Timestamp = (DateTime)rdr["TIMESTAMP"];
+                    cTaps_Reading.PreviousReading = (int?)(decimal?)rdr["PREVIOUS_READING"];
+                    cTaps_Reading.Reading = (int?)(decimal?)rdr["CURRENT_READING"];
+                    cTaps_Reading.MeterSerial = rdr["METER_NUMBER"].ToString();
+
+                    // Check if an object with the same unique properties already exists
+                    bool exists = cTaps_ReadingList.Any(existing => existing.CustomerNo == cTaps_Reading.CustomerNo.Trim());
+
+                    if (exists)
+                    {
+                        continue;
+                    }
+
+
+                    cTaps_ReadingList.Add(cTaps_Reading);
+                }
+                
+                return cTaps_ReadingList;
+            }
         }
     }
 }
