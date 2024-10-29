@@ -13906,6 +13906,25 @@ textarea.form-control-lg {
 .badge.bg-light {
     color: #333;
 }
+.btn-group .btn {
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.hover-brighten:hover {
+    background-color: #fff !important;
+    color: #007bff !important;
+    transform: scale(1.05);
+}
+
+.card-header {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+    margin-left: 5px;
+}
 
 .card h1, .card .h1,
 .card h2,
