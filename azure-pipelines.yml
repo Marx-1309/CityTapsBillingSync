@@ -1,0 +1,48 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+# Copy build output to a specific directory
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(Build.ArtifactStagingDirectory)' # Source folder containing build files
+    contents: '**/*'                                  # Copy all files
+    targetFolder: 'C:\a\1\s\bin\WebApp'               # Target directory for build files
+
+# Optional: Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'C:\a\1\s\bin\WebApp'             # Directory to publish
+    artifactName: 'WebApp'                           # Name of the published artifact
+    publishLocation: 'Container'
