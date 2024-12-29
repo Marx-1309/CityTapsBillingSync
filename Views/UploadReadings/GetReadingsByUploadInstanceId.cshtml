@@ -37,30 +37,81 @@
 <div class="card bg-light mb-3" style="max-width: 100rem;">
     <div class="card-header bg-primary text-white text-center">
         <div class="btn-group" role="group" aria-label="Reading status buttons">
-            <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
-               asp-route-status="average" asp-route-InstanceId="@ViewData["InstanceId"]"
-               class="btn btn-outline-light @average hover-brighten">
-                <i class="fas fa-chart-bar"></i> Average <span class="badge bg-secondary">@ViewBag.AReadingsCount</span>
-            </a>
+            <!-- Average Button with Dropdown -->
+            <div class="btn-group">
+                <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
+                   asp-route-status="average" asp-route-InstanceId="@ViewData["InstanceId"]"
+                   class="btn btn-outline-light @average hover-brighten">
+                    <i class="fas fa-chart-bar"></i> Average
+                    <span class="badge bg-secondary">@ViewBag.AReadingsCount</span>
+                </a>
+                <!-- Dropdown for Average -->
+                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                </ul>
+            </div>
 
-            <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
-               asp-route-status="negative" asp-route-InstanceId="@ViewData["InstanceId"]"
-               class="btn btn-outline-light @negative hover-brighten">
-                <i class="fas fa-arrow-down"></i> Negative <span class="badge bg-danger">@ViewBag.NReadingsCount</span>
-            </a>
+            <!-- Negative Button with Dropdown -->
+            <div class="btn-group">
+                <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
+                   asp-route-status="negative" asp-route-InstanceId="@ViewData["InstanceId"]"
+                   class="btn btn-outline-light @negative hover-brighten">
+                    <i class="fas fa-arrow-down"></i> Negative
+                    <span class="badge bg-danger">@ViewBag.NReadingsCount</span>
+                </a>
+                <!-- Dropdown for Negative -->
+                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                </ul>
+            </div>
 
-            <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
-               asp-route-status="zero" asp-route-InstanceId="@ViewData["InstanceId"]"
-               class="btn btn-outline-light @zero hover-brighten">
-                <i class="fas fa-circle"></i> Zero <span class="badge bg-warning">@ViewBag.ZReadingsCount</span>
-            </a>
+            <!-- Zero Button with Dropdown -->
+            <div class="btn-group">
+                <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
+                   asp-route-status="zero" asp-route-InstanceId="@ViewData["InstanceId"]"
+                   class="btn btn-outline-light @zero hover-brighten">
+                    <i class="fas fa-circle"></i> Zero
+                    <span class="badge bg-warning">@ViewBag.ZReadingsCount</span>
+                </a>
+                <!-- Dropdown for Zero -->
+                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                </ul>
+            </div>
 
-            <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
-               asp-route-status="all" asp-route-InstanceId="@ViewData["InstanceId"]"
-               class="btn btn-outline-light @all hover-brighten">
-                <i class="fas fa-list"></i> All <span class="badge bg-info">@ViewBag.AllReadingsCount</span>
-            </a>
+            <!-- All Button with Dropdown -->
+            <div class="btn-group">
+                <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
+                   asp-route-status="all" asp-route-InstanceId="@ViewData["InstanceId"]"
+                   class="btn btn-outline-light @all hover-brighten">
+                    <i class="fas fa-list"></i> All
+                    <span class="badge bg-info">@ViewBag.AllReadingsCount</span>
+                </a>
+                <!-- Dropdown for All -->
+                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
+                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                </ul>
+            </div>
         </div>
+
+
+
     </div>
 
     <div class="card-body">

@@ -210,43 +210,62 @@
             };
 
             $(document).ready(function () {
-                $('.btnDeleteInstance').click(function (event) {
-                    event.preventDefault(); // Prevent default action of anchor tag
+                $('.btnDeleteInstance').click(function () {
+                    var Id = $(this).attr('data-insindx'); // Use 'data-insindx' to get the InstanceId
 
-                    var Id = $(this).attr('data-insindx');
+                    const swalWithBootstrapButtons = Swal.mixin({
+                        customClass: {
+                            confirmButton: "btn btn-success",
+                            cancelButton: "btn btn-danger"
+                        },
+                        buttonsStyling: false
+                    });
+
                     Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
                         icon: "warning",
-                        title: "You are about to delete this record and its related data!",
-                        showDenyButton: true,
-                        showConfirmButton: false,
                         showCancelButton: true,
-                        denyButtonText: `Yes Delete`
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, delete it!"
                     }).then((result) => {
-                        /* Read more about isConfirmed, isDenied below */
-                        if (result.isDenied) {
+                        if (result.isConfirmed) {
+                            // Send the delete request to the server
                             $.ajax({
-                                url: '/UploadReadings/DeleteInstance?id=' + InstanceId,
+                                url: '/UploadReadings/DeleteInstance?id=' + Id,  // Make sure to pass 'Id'
                                 type: 'GET',
                                 success: function (response) {
-                                    if (response == false) {
-                                        alert('Unable to savexxx the data.' + InstanceId);
-                                    } else {
-                                        $('#AddProcessEarning').modal('hide');
-                                        
-                                            Swal.fire("Record deleted ", "", "success");
-                                        
-
+                                    if (response === true) {
+                                        swalWithBootstrapButtons.fire({
+                                            title: "Deleted!",
+                                            text: "Your record has been deleted.",
+                                            icon: "success"
+                                        });
                                         setTimeout(function () {
-                                            //document.location.href = 'http://localhost:82/Pay_UploadInstance';
-                                            location.reload();
+                                            location.reload();  // Reload the page after a short delay
                                         }, 1500);
+                                    } else {
+                                        swalWithBootstrapButtons.fire({
+                                            title: "Failed!",
+                                            text: "Unable to delete the record. Please try again.",
+                                            icon: "error"
+                                        });
                                     }
                                 },
                                 error: function () {
-                                    alert('Unable to saveee the data.' + InstanceId);
+                                    swalWithBootstrapButtons.fire({
+                                        title: "Error",
+                                        text: "An error occurred while deleting the record.",
+                                        icon: "error"
+                                    });
                                 }
-                            }).done(function () {
-                               
+                            });
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            swalWithBootstrapButtons.fire({
+                                title: "Cancelled",
+                                text: "Your record is safe :)",
+                                icon: "error"
                             });
                         }
                     });

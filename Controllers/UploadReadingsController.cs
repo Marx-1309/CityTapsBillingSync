@@ -14,6 +14,7 @@ using NuGet.Packaging.Licenses;
 namespace CityTapsBillingSync.Controllers
 {
     [Authorize]
+    [Controller]
     public class UploadReadingsController : Controller
     {
         private readonly CityTapsBillingSyncContext _context;
@@ -354,8 +355,8 @@ namespace CityTapsBillingSync.Controllers
 
             if (ReadingType == "all")
             {
-                Operand = ">=";
-                Option = "OR  WRED.CURRENT_READING >=  WRED.PREVIOUS_READING OR WRED.CURRENT_READING =  WRED.PREVIOUS_READING ";
+                Operand = "> WRED.PREVIOUS_READING OR WRED.CURRENT_READING < WRED.PREVIOUS_READING OR WRED.CURRENT_READING = WRED.PREVIOUS_READING OR WRED.PREVIOUS_READING =";
+                Option = "OR  WRED.CURRENT_READING >=  WRED.PREVIOUS_READING OR WRED.CURRENT_READING =  WRED.PREVIOUS_READING  ";
 
             }
             if (ReadingType == "negative")
@@ -370,6 +371,11 @@ namespace CityTapsBillingSync.Controllers
             {
                 Operand = ">=";
             }
+
+            //Find the billing instance using the city tap instance record
+            var ctapsInstance = await _context.CTaps_UploadInstance.Where(r => r.UploadInstanceID == InstanceId).FirstOrDefaultAsync();
+            var billingInstance = await _context.BS_WaterReadingExport.Where(r => r.MonthID == ctapsInstance.MonthId && r.Year == ctapsInstance.Year).Select(r => r.WaterReadingExportID).FirstOrDefaultAsync();
+
 
             #region Query
             string query = $"SELECT DISTINCT \n" +
@@ -386,40 +392,48 @@ namespace CityTapsBillingSync.Controllers
                            $"   JOIN CTaps_Reading CTR ON WRED.CUSTOMER_NUMBER = (SELECT  CUSTNMBR FROM BS_DebtorCityTap WHERE CUSTNMBR_CITYTAP = CTR.CustomerNo)\n" +
                            $"   JOIN \n    BS_DebtorCityTap CT \n    ON WRED.CUSTOMER_NUMBER = CT.CUSTNMBR \nWHERE  \n" +
                            $"    WRED.IsCityTab = 1 \n" +
-                           $"    AND WRED.WaterReadingExportID = {InstanceId}\n" +
-                           $"    AND WRED.CURRENT_READING {Operand} WRED.PREVIOUS_READING {Option};";
+                           $"    AND WRED.WaterReadingExportID = {billingInstance}\n" +
+                           $"    AND WRED.CURRENT_READING {Operand} WRED.PREVIOUS_READING;";
             #endregion
 
             List<CTaps_Reading> cTaps_ReadingList = new List<CTaps_Reading>();
-            using (SqlConnection con = new SqlConnection(SqlConnectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, con);
-                cmd.CommandType = CommandType.Text;
-                con.Open();
-                SqlDataReader rdr = cmd.ExecuteReader();
-                while (rdr.Read())
+                using (SqlConnection con = new SqlConnection(SqlConnectionString))
                 {
-                    CTaps_Reading cTaps_Reading = new CTaps_Reading();
-
-                    cTaps_Reading.CustomerNo = rdr["CITY_TAP_CUSTOMER_NUMBER"].ToString().Trim();
-                    cTaps_Reading.Timestamp = (DateTime)rdr["TIMESTAMP"];
-                    cTaps_Reading.PreviousReading = (int?)(decimal?)rdr["PREVIOUS_READING"];
-                    cTaps_Reading.Reading = (int?)(decimal?)rdr["CURRENT_READING"];
-                    cTaps_Reading.MeterSerial = rdr["METER_NUMBER"].ToString();
-
-                    // Check if an object with the same unique properties already exists
-                    bool exists = cTaps_ReadingList.Any(existing => existing.CustomerNo == cTaps_Reading.CustomerNo.Trim());
-
-                    if (exists)
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    cmd.CommandType = CommandType.Text;
+                    con.Open();
+                    SqlDataReader rdr = cmd.ExecuteReader();
+                    while (rdr.Read())
                     {
-                        continue;
+                        CTaps_Reading cTaps_Reading = new CTaps_Reading();
+
+                        cTaps_Reading.CustomerNo = rdr["CITY_TAP_CUSTOMER_NUMBER"].ToString().Trim();
+                        cTaps_Reading.Timestamp = (DateTime)rdr["TIMESTAMP"];
+                        cTaps_Reading.PreviousReading = (int?)(decimal?)rdr["PREVIOUS_READING"];
+                        cTaps_Reading.Reading = (int?)(decimal?)rdr["CURRENT_READING"];
+                        cTaps_Reading.MeterSerial = rdr["METER_NUMBER"].ToString();
+
+                        // Check if an object with the same unique properties already exists
+                        bool exists = cTaps_ReadingList.Any(existing => existing.CustomerNo == cTaps_Reading.CustomerNo.Trim());
+
+                        if (exists)
+                        {
+                            continue;
+                        }
+
+
+                        cTaps_ReadingList.Add(cTaps_Reading);
                     }
 
-
-                    cTaps_ReadingList.Add(cTaps_Reading);
+                    return cTaps_ReadingList;
                 }
-                
-                return cTaps_ReadingList;
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
     }
