@@ -41,17 +41,21 @@
             <div class="btn-group">
                 <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
                    asp-route-status="average" asp-route-InstanceId="@ViewData["InstanceId"]"
-                   class="btn btn-outline-light @average hover-brighten">
+                   class="btn @average hover-brighten"
+                   style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <i class="fas fa-chart-bar"></i> Average
                     <span class="badge bg-secondary">@ViewBag.AReadingsCount</span>
                 </a>
                 <!-- Dropdown for Average -->
-                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
-                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
-                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
-                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" asp-controller="UploadReadings" asp-action="ExportReadingsInExcel" asp-route-ReadingType="average"
+                           asp-route-status="average" asp-route-InstanceId="@ViewData["InstanceId"]">Download Excel</a>
+                    </li>
                 </ul>
             </div>
 
@@ -59,17 +63,21 @@
             <div class="btn-group">
                 <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
                    asp-route-status="negative" asp-route-InstanceId="@ViewData["InstanceId"]"
-                   class="btn btn-outline-light @negative hover-brighten">
+                   class="btn @negative hover-brighten"
+                   style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <i class="fas fa-arrow-down"></i> Negative
                     <span class="badge bg-danger">@ViewBag.NReadingsCount</span>
                 </a>
                 <!-- Dropdown for Negative -->
-                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
-                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
-                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
-                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" asp-controller="UploadReadings" asp-action="ExportReadingsInExcel" asp-route-ReadingType="negative"
+                           asp-route-status="negative" asp-route-InstanceId="@ViewData["InstanceId"]">Download Excel</a>
+                    </li>
                 </ul>
             </div>
 
@@ -77,17 +85,21 @@
             <div class="btn-group">
                 <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
                    asp-route-status="zero" asp-route-InstanceId="@ViewData["InstanceId"]"
-                   class="btn btn-outline-light @zero hover-brighten">
+                   class="btn @zero hover-brighten"
+                   style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <i class="fas fa-circle"></i> Zero
                     <span class="badge bg-warning">@ViewBag.ZReadingsCount</span>
                 </a>
                 <!-- Dropdown for Zero -->
-                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
-                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
-                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
-                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" asp-controller="UploadReadings" asp-action="ExportReadingsInExcel" asp-route-ReadingType="zero"
+                           asp-route-status="zero" asp-route-InstanceId="@ViewData["InstanceId"]">Download Excel</a>
+                    </li>
                 </ul>
             </div>
 
@@ -95,20 +107,26 @@
             <div class="btn-group">
                 <a asp-controller="UploadReadings" asp-action="GetReadingsByUploadInstanceId"
                    asp-route-status="all" asp-route-InstanceId="@ViewData["InstanceId"]"
-                   class="btn btn-outline-light @all hover-brighten">
+                   class="btn @all hover-brighten"
+                   style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <i class="fas fa-list"></i> All
                     <span class="badge bg-info">@ViewBag.AllReadingsCount</span>
                 </a>
                 <!-- Dropdown for All -->
-                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
-                        style="background-color: white; border: 1px solid #ccc; color: #333;">
+                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="background-color: white; border: 1px solid #ccc; color: #333; padding: 10px 20px;">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
-                <ul class="dropdown-menu" style="background-color: white; border: 1px solid #ccc; color: #333;">
-                    <li><a class="dropdown-item" href="#">Download Excel</a></li>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" asp-controller="UploadReadings" asp-action="ExportReadingsInExcel" asp-route-ReadingType="all"
+                           asp-route-status="all" asp-route-InstanceId="@ViewData["InstanceId"]">Download Excel</a>
+                    </li>
                 </ul>
             </div>
         </div>
+
+
 
 
 

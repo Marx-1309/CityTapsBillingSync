@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using NuGet.Packaging.Licenses;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2013.Word;
 
 namespace CityTapsBillingSync.Controllers
 {
@@ -436,5 +439,141 @@ namespace CityTapsBillingSync.Controllers
                 throw;
             }
         }
+
+        [HttpGet]
+        public async Task<FileResult> ExportReadingsInExcel(string ReadingType, int InstanceId)
+        {
+            string Operand = "";
+            string Option = "";
+
+            if (ReadingType == "all")
+            {
+                Operand = "> WRED.PREVIOUS_READING OR WRED.CURRENT_READING < WRED.PREVIOUS_READING OR WRED.CURRENT_READING = WRED.PREVIOUS_READING OR WRED.PREVIOUS_READING =";
+                Option = "OR  WRED.CURRENT_READING >=  WRED.PREVIOUS_READING OR WRED.CURRENT_READING =  WRED.PREVIOUS_READING  ";
+
+            }
+            if (ReadingType == "negative")
+            {
+                Operand = "<";
+            }
+            if (ReadingType == "zero")
+            {
+                Operand = "=";
+            }
+            if (ReadingType == "average")
+            {
+                Operand = ">=";
+            }
+
+            //Find the billing instance using the city tap instance record
+            var ctapsInstance = await _context.CTaps_UploadInstance.Where(r => r.UploadInstanceID == InstanceId).FirstOrDefaultAsync();
+            var billingInstance = await _context.BS_WaterReadingExport.Where(r => r.MonthID == ctapsInstance.MonthId && r.Year == ctapsInstance.Year).Select(r => r.WaterReadingExportID).FirstOrDefaultAsync();
+
+
+            #region Query
+            string query = $"SELECT DISTINCT \n" +
+                           $"    WRED.CUSTOMER_NUMBER,\n" +
+                           $"    CT.CUSTNMBR_CITYTAP as CITY_TAP_CUSTOMER_NUMBER,\n" +
+                           $"    [Timestamp],\n" +
+                           $"    WRED.CUSTOMER_NAME,\n" +
+                           $"    WRED.ERF_NUMBER,\n" +
+                           $"    WRED.METER_NUMBER,\n" +
+                           $"    WRED.AREA,\n" +
+                           $"    WRED.PREVIOUS_READING,\n" +
+                           $"    WRED.CURRENT_READING\n  \nFROM \n" +
+                           $"    BS_WaterReadingExportData WRED\n" +
+                           $"   JOIN CTaps_Reading CTR ON WRED.CUSTOMER_NUMBER = (SELECT  CUSTNMBR FROM BS_DebtorCityTap WHERE CUSTNMBR_CITYTAP = CTR.CustomerNo)\n" +
+                           $"   JOIN \n    BS_DebtorCityTap CT \n    ON WRED.CUSTOMER_NUMBER = CT.CUSTNMBR \nWHERE  \n" +
+                           $"    WRED.IsCityTab = 1 \n" +
+                           $"    AND WRED.WaterReadingExportID = {billingInstance}\n" +
+                           $"    AND WRED.CURRENT_READING {Operand} WRED.PREVIOUS_READING;";
+            #endregion
+
+           
+            try
+            {
+                using (SqlConnection con = new SqlConnection(SqlConnectionString))
+                {
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    cmd.CommandType = CommandType.Text;
+                    con.Open();
+                    SqlDataReader rdr = cmd.ExecuteReader();
+                    List<CustomerReadingToExcel> ReadingsList = new List<CustomerReadingToExcel>();
+                    while (rdr.Read())
+                    {
+                        CustomerReadingToExcel Reading = new CustomerReadingToExcel();
+
+                        Reading.CityTapCustomerNumber = rdr["CITY_TAP_CUSTOMER_NUMBER"].ToString()?.Trim(); // Trimming whitespace from the CITY_TAP_CUSTOMER_NUMBER
+                        Reading.CustomerNumber = rdr["CUSTOMER_NUMBER"].ToString()?.Trim();
+                        //Reading.Timestamp = rdr["Timestamp"] != DBNull.Value ? Convert.ToDateTime(rdr["Timestamp"]) : (DateTime?)null; // Handling potential null for Timestamp
+                        Reading.CustomerName = rdr["CUSTOMER_NAME"].ToString()?.Trim();
+                        Reading.ErfNumber = rdr["ERF_NUMBER"].ToString()?.Trim();
+                        Reading.MeterNumber = rdr["METER_NUMBER"].ToString()?.Trim();
+                        Reading.Area = rdr["AREA"].ToString()?.Trim();
+
+                        // Nullable decimal for previous and current readings
+                        Reading.PreviousReading = rdr["PREVIOUS_READING"] != DBNull.Value ? (decimal?)rdr["PREVIOUS_READING"] : null;
+                        Reading.CurrentReading = rdr["CURRENT_READING"] != DBNull.Value ? (decimal?)rdr["CURRENT_READING"] : null;
+
+
+                        // Check if an object with the same unique properties already exists
+                        bool exists = ReadingsList.Any(existing => existing.CustomerNumber == Reading.CustomerNumber.Trim());
+
+                        if (exists)
+                        {
+                            continue;
+                        }
+
+                        ReadingsList.Add(Reading);
+                    }
+                    var fileName = $"{ReadingType}-readings {DateTime.Now}.xlsx";
+                    return GenerateExcel(fileName, ReadingsList);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
+        }
+
+        private FileResult GenerateExcel(string fileName, List<CustomerReadingToExcel> readings)
+        {
+            DataTable dataTable = new DataTable("Readings");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                   new DataColumn("CUSTOMER_NUMBER"),
+                   new DataColumn("CITY_TAP_CUSTOMER_NUMBER"),
+                   //new DataColumn("Timestamp"),
+                   new DataColumn("CUSTOMER_NAME"),
+                   new DataColumn("ERF_NUMBER"),
+                   new DataColumn("METER_NUMBER"),
+                   new DataColumn("AREA"),
+                   new DataColumn("PREVIOUS_READING"),
+                   new DataColumn("CURRENT_READING")
+            });
+
+            foreach (var reading in readings)
+            {
+                dataTable.Rows.Add(reading.CustomerNumber,reading.CityTapCustomerNumber,reading.CustomerName,reading.ErfNumber,reading.MeterNumber,reading.Area,reading.PreviousReading,reading.CurrentReading);
+            }
+
+
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                wb.Worksheets.Add(dataTable);
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+
+                    return File(stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        fileName);
+                }
+            }
+
+        }
+
     }
 }
