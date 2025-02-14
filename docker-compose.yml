@@ -1,0 +1,29 @@
+﻿version: '3.4'
+
+services:
+  app:
+    image: citytapsimage:latest
+    build:
+      context: .
+    ports:
+      - "8080:80"
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-container
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword1  # Change this to a strong password
+    ports:
+      - "1433:1433"  # Exposing SQL Server's default port
+    networks:
+      - sql-network
+    volumes:
+      - sql-data:/var/opt/mssql  # Persist data across container restarts
+
+networks:
+  sql-network:
+    driver: bridge
+
+volumes:
+  sql-data:
+    driver: local
