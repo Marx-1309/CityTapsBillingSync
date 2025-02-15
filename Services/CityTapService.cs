@@ -11,7 +11,6 @@ namespace CityTapsBillingSync.Services
         {
             _baseService = baseService;
         }
-
         public async Task<ResponseDTO?> GetCityTapsReadingsAsync()
         {
             return await _baseService.SendAsync(new RequestDTO()
